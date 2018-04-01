@@ -97,7 +97,7 @@ int MP1Node::initThisNode(Address *joinaddr) {
      * This function is partially implemented and may require changes
      */
     int id = *(int*)(&memberNode->addr.addr);
-    int port = *(short*)(&memberNode->addr.addr[4]);
+    short port = *(short*)(&memberNode->addr.addr[4]);
 
     memberNode->bFailed = false;
     memberNode->inited = true;
@@ -108,6 +108,20 @@ int MP1Node::initThisNode(Address *joinaddr) {
     memberNode->pingCounter = TFAIL;
     memberNode->timeOutCounter = -1;
     initMemberListTable(memberNode);
+
+    //apply only for introducer
+    if ( 0 == memcmp((char *)&(memberNode->addr.addr), (char *)&(joinaddr->addr), sizeof(memberNode->addr.addr))) {
+        cout << "[Init node] Introducer id:port [" << id << ":" << port << "]" << endl;
+
+        MemberListEntry memberEntry;
+        memberEntry.setid(id);
+        memberEntry.setport(port);
+        memberEntry.setheartbeat(memberNode->heartbeat);
+        memberEntry.settimestamp(par->getcurrtime());
+        memberNode->memberList.push_back(memberEntry);
+    } else {
+        cout << "[Init node] Member id:port [" << id << ":" << port << "]" << endl;
+    }
 
     return 0;
 }
